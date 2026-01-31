@@ -1,9 +1,11 @@
 import 'package:get/get.dart';
 import '../../data/models/task_model.dart';
 import '../../data/services/storage_service.dart';
+import '../../data/services/notification_service.dart';
 
 class TaskController extends GetxController {
   final StorageService _storage = Get.find<StorageService>();
+  final NotificationService _notifications = Get.find<NotificationService>();
 
   final RxList<TaskModel> tasks = <TaskModel>[].obs;
   final RxBool showCompleted = true.obs;
@@ -36,6 +38,11 @@ class TaskController extends GetxController {
       order: tasks.length,
     );
 
+    // Schedule notification if reminder time is set
+    if (reminderTime != null) {
+      task.notificationId = await _notifications.scheduleTaskReminder(task);
+    }
+
     await _storage.addTask(task);
     loadTasks();
     Get.back();
@@ -43,17 +50,43 @@ class TaskController extends GetxController {
   }
 
   Future<void> updateTask(TaskModel task) async {
+    // Cancel existing notification
+    await _notifications.cancelTaskReminder(task.notificationId);
+
+    // Schedule new notification if reminder time is set
+    if (task.reminderTime != null && !task.isCompleted) {
+      task.notificationId = await _notifications.scheduleTaskReminder(task);
+    } else {
+      task.notificationId = null;
+    }
+
     await _storage.updateTask(task);
     loadTasks();
   }
 
   Future<void> toggleTaskCompletion(TaskModel task) async {
     task.isCompleted = !task.isCompleted;
+
+    // Cancel notification when task is completed
+    if (task.isCompleted) {
+      await _notifications.cancelTaskReminder(task.notificationId);
+      task.notificationId = null;
+    } else if (task.reminderTime != null) {
+      // Reschedule notification if task is uncompleted and has reminder
+      task.notificationId = await _notifications.scheduleTaskReminder(task);
+    }
+
     await _storage.updateTask(task);
     loadTasks();
   }
 
   Future<void> deleteTask(String id) async {
+    // Cancel notification before deleting
+    final task = _storage.tasks.get(id);
+    if (task != null) {
+      await _notifications.cancelTaskReminder(task.notificationId);
+    }
+
     await _storage.deleteTask(id);
     loadTasks();
     Get.back();

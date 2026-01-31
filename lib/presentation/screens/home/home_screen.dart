@@ -4,102 +4,82 @@ import '../tasks/tasks_screen.dart';
 import '../notes/notes_screen.dart';
 import '../calendar/calendar_screen.dart';
 import '../settings/settings_screen.dart';
-import '../../../core/utils/responsive.dart';
-import '../../../core/theme/app_theme.dart';
 
-class HomeController extends GetxController {
-  final RxInt currentIndex = 0.obs;
-
-  void changeTab(int index) {
-    currentIndex.value = index;
-  }
-}
-
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final PageController _pageController = PageController();
+  int _selectedIndex = 0;
+
+  final List<Widget> _screens = const [
+    TasksScreen(),
+    NotesScreen(),
+    CalendarScreen(),
+  ];
+
+  void _onNavBarTap(int index) {
+    setState(() => _selectedIndex = index);
+    _pageController.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.ease,
+    );
+  }
+
+  void _onPageChanged(int index) {
+    setState(() => _selectedIndex = index);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final HomeController controller = Get.put(HomeController());
-
-    final List<Widget> screens = [
-      const TasksScreen(),
-      const NotesScreen(),
-      const CalendarScreen(),
-    ];
-
-    return Obx(
-      () => Scaffold(
-        body: screens[controller.currentIndex.value],
-        bottomNavigationBar: Theme(
-          data: Theme.of(context).copyWith(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            splashFactory: NoSplash.splashFactory,
+    return Scaffold(
+      body: PageView(
+        controller: _pageController,
+        children: _screens,
+        onPageChanged: _onPageChanged,
+        physics: const BouncingScrollPhysics(),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onNavBarTap,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.check_circle_outline),
+            label: 'Tasks',
           ),
-          child: BottomNavigationBar(
-            currentIndex: controller.currentIndex.value,
-            onTap: controller.changeTab,
-            selectedFontSize: Responsive.fontSize16,
-            unselectedFontSize: Responsive.fontSize14,
-            iconSize: Responsive.iconSize28,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.task_alt),
-                label: 'Tasks',
-              ),
-              BottomNavigationBarItem(icon: Icon(Icons.note), label: 'Notes'),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.calendar_today),
-                label: 'Calendar',
-              ),
-            ],
+          BottomNavigationBarItem(
+            icon: Icon(Icons.note_outlined),
+            label: 'Notes',
           ),
-        ),
-        drawer: Drawer(
-          backgroundColor: AppTheme.secondaryColor,
-          child: SafeArea(
-            child: Column(
-              children: [
-                SizedBox(height: Responsive.spacing24),
-                Icon(
-                  Icons.note_alt,
-                  size: Responsive.getWidth(20),
-                  color: AppTheme.accentColor,
-                ),
-                SizedBox(height: Responsive.spacing12),
-                Text(
-                  'Notes App',
-                  style: TextStyle(
-                    fontSize: Responsive.fontSize24,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
-                SizedBox(height: Responsive.spacing32),
-                Divider(color: AppTheme.dividerColor),
-                ListTile(
-                  leading: Icon(
-                    Icons.settings,
-                    color: AppTheme.accentColor,
-                    size: Responsive.iconSize24,
-                  ),
-                  title: Text(
-                    'Settings & Backup',
-                    style: TextStyle(
-                      fontSize: Responsive.fontSize16,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  onTap: () {
-                    Get.back();
-                    Get.to(() => const SettingsScreen());
-                  },
-                ),
-                Divider(color: AppTheme.dividerColor),
-              ],
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today_outlined),
+            label: 'Calendar',
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            DrawerHeader(
+              child: Text(
+                'Notes App',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
             ),
-          ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () {
+                Navigator.pop(context);
+                Get.to(() => const SettingsScreen());
+              },
+            ),
+          ],
         ),
       ),
     );

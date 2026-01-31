@@ -25,6 +25,18 @@ class CalendarEventModel extends HiveObject {
   @HiveField(6)
   DateTime createdAt;
 
+  @HiveField(7)
+  int? notificationId;
+
+  @HiveField(8)
+  int? alarmNotificationId;
+
+  @HiveField(9)
+  bool alarmEnabled;
+
+  @HiveField(10)
+  int reminderMinutesBefore;
+
   CalendarEventModel({
     required this.id,
     required this.title,
@@ -33,6 +45,10 @@ class CalendarEventModel extends HiveObject {
     this.location,
     this.reminderTime,
     required this.createdAt,
+    this.notificationId,
+    this.alarmNotificationId,
+    this.alarmEnabled = false,
+    this.reminderMinutesBefore = 0,
   });
 
   Map<String, dynamic> toJson() {
@@ -44,6 +60,10 @@ class CalendarEventModel extends HiveObject {
       'location': location,
       'reminderTime': reminderTime?.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
+      'notificationId': notificationId,
+      'alarmNotificationId': alarmNotificationId,
+      'alarmEnabled': alarmEnabled,
+      'reminderMinutesBefore': reminderMinutesBefore,
     };
   }
 
@@ -58,6 +78,10 @@ class CalendarEventModel extends HiveObject {
           ? DateTime.parse(json['reminderTime'])
           : null,
       createdAt: DateTime.parse(json['createdAt']),
+      notificationId: json['notificationId'],
+      alarmNotificationId: json['alarmNotificationId'],
+      alarmEnabled: json['alarmEnabled'] ?? false,
+      reminderMinutesBefore: json['reminderMinutesBefore'] ?? 0,
     );
   }
 }

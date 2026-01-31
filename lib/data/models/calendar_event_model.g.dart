@@ -24,13 +24,17 @@ class CalendarEventModelAdapter extends TypeAdapter<CalendarEventModel> {
       location: fields[4] as String?,
       reminderTime: fields[5] as DateTime?,
       createdAt: fields[6] as DateTime,
+      notificationId: fields[7] as int?,
+      alarmNotificationId: fields[8] as int?,
+      alarmEnabled: fields[9] as bool,
+      reminderMinutesBefore: fields[10] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, CalendarEventModel obj) {
     writer
-      ..writeByte(7)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -44,7 +48,15 @@ class CalendarEventModelAdapter extends TypeAdapter<CalendarEventModel> {
       ..writeByte(5)
       ..write(obj.reminderTime)
       ..writeByte(6)
-      ..write(obj.createdAt);
+      ..write(obj.createdAt)
+      ..writeByte(7)
+      ..write(obj.notificationId)
+      ..writeByte(8)
+      ..write(obj.alarmNotificationId)
+      ..writeByte(9)
+      ..write(obj.alarmEnabled)
+      ..writeByte(10)
+      ..write(obj.reminderMinutesBefore);
   }
 
   @override

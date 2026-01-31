@@ -23,13 +23,14 @@ class TaskModelAdapter extends TypeAdapter<TaskModel> {
       createdAt: fields[3] as DateTime,
       reminderTime: fields[4] as DateTime?,
       order: fields[5] as int,
+      notificationId: fields[6] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, TaskModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +42,9 @@ class TaskModelAdapter extends TypeAdapter<TaskModel> {
       ..writeByte(4)
       ..write(obj.reminderTime)
       ..writeByte(5)
-      ..write(obj.order);
+      ..write(obj.order)
+      ..writeByte(6)
+      ..write(obj.notificationId);
   }
 
   @override

@@ -22,6 +22,9 @@ class TaskModel extends HiveObject {
   @HiveField(5)
   int order;
 
+  @HiveField(6)
+  int? notificationId;
+
   TaskModel({
     required this.id,
     required this.title,
@@ -29,6 +32,7 @@ class TaskModel extends HiveObject {
     required this.createdAt,
     this.reminderTime,
     this.order = 0,
+    this.notificationId,
   });
 
   Map<String, dynamic> toJson() {
@@ -39,6 +43,7 @@ class TaskModel extends HiveObject {
       'createdAt': createdAt.toIso8601String(),
       'reminderTime': reminderTime?.toIso8601String(),
       'order': order,
+      'notificationId': notificationId,
     };
   }
 
@@ -52,6 +57,7 @@ class TaskModel extends HiveObject {
           ? DateTime.parse(json['reminderTime'])
           : null,
       order: json['order'] ?? 0,
+      notificationId: json['notificationId'],
     );
   }
 }
