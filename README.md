@@ -126,7 +126,7 @@ This project is licensed under the MIT License.
 
 ## 👤 Author
 
-**Your Name**
+**Abdul Sami**
 
 * Organize your life, your way.
 * Enjoy using **Notes App**!
