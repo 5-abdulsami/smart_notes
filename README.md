@@ -132,9 +132,3 @@ This project is licensed under the MIT License.
 * Enjoy using **Notes App**!
 
 ---
-
-```
-
-Would you like me to generate a **feature-rich CHANGELOG.md** to go along with this for your first release?
-
-```
