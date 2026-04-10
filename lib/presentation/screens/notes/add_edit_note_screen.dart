@@ -112,6 +112,8 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                   fontSize: Responsive.fontSize18,
                   fontWeight: FontWeight.w600,
                 ),
+                maxLines: 10,
+                minLines: 1,
               ),
             ),
             Container(

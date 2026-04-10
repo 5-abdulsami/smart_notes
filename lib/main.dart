@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:notes_app/presentation/screens/splash/splash_screen.dart';
 import 'data/models/task_model.dart';
 import 'data/models/note_model.dart';
 import 'data/models/calendar_event_model.dart';
@@ -46,7 +45,7 @@ class MyApp extends StatelessWidget {
       title: 'Notes App',
       theme: AppTheme.darkTheme,
       debugShowCheckedModeBanner: false,
-      home: const SplashScreen(),
+      home: const HomeScreen(),
       defaultTransition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 300),
     );

@@ -152,7 +152,7 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
                   hintText: 'Enter task title',
                 ),
                 style: TextStyle(fontSize: Responsive.fontSize16),
-                maxLines: 3,
+                maxLines: 10,
                 minLines: 1,
               ),
               SizedBox(height: Responsive.spacing24),

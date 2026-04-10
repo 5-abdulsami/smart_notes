@@ -22,14 +22,14 @@ class TaskCard extends StatelessWidget {
         onTap: () => Get.to(() => AddEditTaskScreen(task: task)),
         borderRadius: BorderRadius.circular(Responsive.radius12),
         child: Padding(
-          padding: EdgeInsets.all(Responsive.spacing12),
+          padding: EdgeInsets.all(Responsive.spacing8),
           child: Row(
             children: [
               Checkbox(
                 value: task.isCompleted,
                 onChanged: (value) => controller.toggleTaskCompletion(task),
               ),
-              SizedBox(width: Responsive.spacing8),
+              SizedBox(width: Responsive.spacing4),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +37,7 @@ class TaskCard extends StatelessWidget {
                     Text(
                       task.title,
                       style: TextStyle(
-                        fontSize: Responsive.fontSize16,
+                        fontSize: Responsive.fontSize18,
                         color: AppTheme.textPrimary,
                         decoration: task.isCompleted
                             ? TextDecoration.lineThrough
@@ -45,24 +45,30 @@ class TaskCard extends StatelessWidget {
                         decorationColor: AppTheme.textSecondary,
                       ),
                     ),
+
                     if (task.reminderTime != null) ...[
-                      SizedBox(height: Responsive.spacing4),
+                      SizedBox(height: Responsive.spacing8),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(
-                            Icons.notifications_outlined,
-                            size: Responsive.iconSize20,
-                            color: AppTheme.accentColor,
-                          ),
-                          SizedBox(width: Responsive.spacing4),
-                          Text(
-                            DateFormat(
-                              'MMM dd, yyyy hh:mm a',
-                            ).format(task.reminderTime!),
-                            style: TextStyle(
-                              fontSize: Responsive.fontSize12,
-                              color: AppTheme.textSecondary,
-                            ),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.notifications_outlined,
+                                size: Responsive.iconSize20,
+                                color: AppTheme.accentColor,
+                              ),
+                              SizedBox(width: Responsive.spacing4),
+                              Text(
+                                DateFormat(
+                                  'MMM dd, hh:mm a',
+                                ).format(task.reminderTime!),
+                                style: TextStyle(
+                                  fontSize: Responsive.fontSize12,
+                                  color: AppTheme.textSecondary,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
