@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../data/models/note_model.dart';
 import '../../core/utils/responsive.dart';
 import '../../core/theme/app_theme.dart';
+import '../controllers/note_controller.dart';
 import '../screens/notes/add_edit_note_screen.dart';
 
 class NoteCard extends StatelessWidget {
@@ -63,10 +64,15 @@ class NoteCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.drag_handle,
-                color: AppTheme.textSecondary,
-                size: Responsive.iconSize24,
+              IconButton(
+                icon: Icon(
+                  note.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                  color: note.isPinned
+                      ? AppTheme.accentColor
+                      : AppTheme.textSecondary,
+                  size: Responsive.iconSize20,
+                ),
+                onPressed: () => Get.find<NoteController>().togglePin(note),
               ),
             ],
           ),

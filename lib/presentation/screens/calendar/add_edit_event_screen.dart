@@ -191,112 +191,107 @@ class _AddEditEventScreenState extends State<AddEditEventScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.event == null ? 'Add Event' : 'Edit Event'),
-          actions: widget.event != null
-              ? [
-                  IconButton(
-                    icon: Icon(Icons.delete, size: Responsive.iconSize24),
-                    onPressed: _deleteEvent,
-                  ),
-                ]
-              : null,
-        ),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.all(Responsive.spacing16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Event Title',
-                  hintText: 'Enter event title',
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.event == null ? 'Add Event' : 'Edit Event'),
+        actions: widget.event != null
+            ? [
+                IconButton(
+                  icon: Icon(Icons.delete, size: Responsive.iconSize24),
+                  onPressed: _deleteEvent,
                 ),
-                style: TextStyle(fontSize: Responsive.fontSize16),
+              ]
+            : null,
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(Responsive.spacing16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(
+                labelText: 'Event Title',
+                hintText: 'Enter event title',
               ),
-              SizedBox(height: Responsive.spacing16),
-              Card(
-                child: ListTile(
-                  leading: Icon(
-                    Icons.calendar_today,
-                    color: AppTheme.accentColor,
-                    size: Responsive.iconSize24,
-                  ),
-                  title: const Text('Date'),
-                  subtitle: Text(
-                    DateFormat('EEEE, MMMM dd, yyyy').format(selectedDate),
-                    style: TextStyle(fontSize: Responsive.fontSize14),
-                  ),
+              style: TextStyle(fontSize: Responsive.fontSize16),
+            ),
+            SizedBox(height: Responsive.spacing16),
+            Card(
+              child: ListTile(
+                leading: Icon(
+                  Icons.calendar_today,
+                  color: AppTheme.accentColor,
+                  size: Responsive.iconSize24,
+                ),
+                title: const Text('Date'),
+                subtitle: Text(
+                  DateFormat('EEEE, MMMM dd, yyyy').format(selectedDate),
+                  style: TextStyle(fontSize: Responsive.fontSize14),
                 ),
               ),
-              SizedBox(height: Responsive.spacing12),
-              Card(
-                child: ListTile(
-                  leading: Icon(
-                    Icons.access_time,
-                    color: AppTheme.accentColor,
-                    size: Responsive.iconSize24,
-                  ),
-                  title: const Text('Time (PKT)'),
-                  subtitle: Text(
-                    selectedTime != null
-                        ? selectedTime!.format(context)
-                        : 'No time set',
-                    style: TextStyle(fontSize: Responsive.fontSize14),
-                  ),
-                  trailing: selectedTime != null
-                      ? IconButton(
-                          icon: Icon(Icons.clear, size: Responsive.iconSize20),
-                          onPressed: () => setState(() => selectedTime = null),
-                        )
-                      : null,
-                  onTap: _selectTime,
+            ),
+            SizedBox(height: Responsive.spacing12),
+            Card(
+              child: ListTile(
+                leading: Icon(
+                  Icons.access_time,
+                  color: AppTheme.accentColor,
+                  size: Responsive.iconSize24,
                 ),
-              ),
-              SizedBox(height: Responsive.spacing12),
-              TextField(
-                controller: locationController,
-                decoration: const InputDecoration(
-                  labelText: 'Location (Optional)',
-                  hintText: 'Enter location',
-                  prefixIcon: Icon(Icons.location_on),
+                title: const Text('Time (PKT)'),
+                subtitle: Text(
+                  selectedTime != null
+                      ? selectedTime!.format(context)
+                      : 'No time set',
+                  style: TextStyle(fontSize: Responsive.fontSize14),
                 ),
-                style: TextStyle(fontSize: Responsive.fontSize16),
+                trailing: selectedTime != null
+                    ? IconButton(
+                        icon: Icon(Icons.clear, size: Responsive.iconSize20),
+                        onPressed: () => setState(() => selectedTime = null),
+                      )
+                    : null,
+                onTap: _selectTime,
               ),
-              SizedBox(height: Responsive.spacing16),
-              Card(
-                child: ListTile(
-                  leading: Icon(
-                    Icons.notifications,
-                    color: AppTheme.accentColor,
-                    size: Responsive.iconSize24,
-                  ),
-                  title: const Text('Reminder'),
-                  subtitle: Text(
-                    reminderTime != null
-                        ? DateFormat(
-                            'MMM dd, yyyy hh:mm a',
-                          ).format(reminderTime!)
-                        : 'No reminder set',
-                    style: TextStyle(fontSize: Responsive.fontSize14),
-                  ),
-                  trailing: reminderTime != null
-                      ? IconButton(
-                          icon: Icon(Icons.clear, size: Responsive.iconSize20),
-                          onPressed: () => setState(() => reminderTime = null),
-                        )
-                      : null,
-                  onTap: _selectReminderTime,
+            ),
+            SizedBox(height: Responsive.spacing12),
+            TextField(
+              controller: locationController,
+              decoration: const InputDecoration(
+                labelText: 'Location (Optional)',
+                hintText: 'Enter location',
+                prefixIcon: Icon(Icons.location_on),
+              ),
+              style: TextStyle(fontSize: Responsive.fontSize16),
+            ),
+            SizedBox(height: Responsive.spacing16),
+            Card(
+              child: ListTile(
+                leading: Icon(
+                  Icons.notifications,
+                  color: AppTheme.accentColor,
+                  size: Responsive.iconSize24,
                 ),
+                title: const Text('Reminder'),
+                subtitle: Text(
+                  reminderTime != null
+                      ? DateFormat('MMM dd, yyyy hh:mm a').format(reminderTime!)
+                      : 'No reminder set',
+                  style: TextStyle(fontSize: Responsive.fontSize14),
+                ),
+                trailing: reminderTime != null
+                    ? IconButton(
+                        icon: Icon(Icons.clear, size: Responsive.iconSize20),
+                        onPressed: () => setState(() => reminderTime = null),
+                      )
+                    : null,
+                onTap: _selectReminderTime,
               ),
-              SizedBox(height: Responsive.spacing32),
-              PrimaryButton(text: 'Save', onTap: _saveEvent),
-            ],
-          ),
+            ),
+            SizedBox(height: Responsive.spacing32),
+            PrimaryButton(text: 'Save', onTap: _saveEvent),
+          ],
         ),
       ),
     );

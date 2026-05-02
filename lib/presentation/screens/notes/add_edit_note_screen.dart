@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../controllers/note_controller.dart';
 import '../../../core/utils/responsive.dart';
@@ -29,6 +30,12 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
     descriptionController = TextEditingController(
       text: widget.note?.description ?? '',
     );
+    // Load formatting from note
+    if (widget.note != null) {
+      isBold = widget.note!.isBold;
+      isUnderline = widget.note!.isUnderline;
+      fontSize = widget.note!.fontSize;
+    }
   }
 
   @override
@@ -48,11 +55,30 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
       controller.addNote(
         titleController.text.trim(),
         descriptionController.text.trim(),
+        fontSize: fontSize,
+        isBold: isBold,
+        isUnderline: isUnderline,
       );
     } else {
       widget.note!.title = titleController.text.trim();
       widget.note!.description = descriptionController.text.trim();
+      widget.note!.fontSize = fontSize;
+      widget.note!.isBold = isBold;
+      widget.note!.isUnderline = isUnderline;
       controller.updateNote(widget.note!);
+    }
+  }
+
+  void _copyDescription() {
+    if (descriptionController.text.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: descriptionController.text));
+      Get.snackbar(
+        'Copied',
+        'Description copied to clipboard',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: AppTheme.secondaryColor,
+        colorText: AppTheme.textPrimary,
+      );
     }
   }
 
@@ -112,8 +138,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                   fontSize: Responsive.fontSize18,
                   fontWeight: FontWeight.w600,
                 ),
-                maxLines: 10,
-                minLines: 1,
+                maxLines: 1, // Fixed: Titles should be 1 line usually
               ),
             ),
             Container(
@@ -121,7 +146,6 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                 borderRadius: BorderRadius.circular(8),
                 color: AppTheme.secondaryColor,
               ),
-
               padding: EdgeInsets.symmetric(
                 horizontal: Responsive.spacing8,
                 vertical: Responsive.spacing8,
@@ -181,6 +205,13 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                       );
                     },
                   ),
+                  IconButton(
+                    icon: const Icon(Icons.copy_rounded),
+                    iconSize: Responsive.iconSize20,
+                    color: AppTheme.textSecondary,
+                    onPressed: _copyDescription,
+                    tooltip: 'Copy all',
+                  ),
                   const Spacer(),
                   DropdownButton<double>(
                     value: fontSize,
@@ -213,6 +244,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                     border: InputBorder.none,
                     hintText: 'Start writing...',
                     hintStyle: TextStyle(color: AppTheme.textSecondary),
+                    fillColor: Colors.transparent, // Ensure no double fill
                   ),
                   style: TextStyle(
                     fontSize: fontSize,
@@ -224,6 +256,10 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                   maxLines: null,
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
+                  keyboardType: TextInputType.multiline,
+                  // Ensure professional behavior: no auto-selection unless specified
+                  enableInteractiveSelection: true,
+                  selectionControls: EmptyTextSelectionControls(), // Try to disable custom selection overlay if causing issues, or use Material
                 ),
               ),
             ),
@@ -232,4 +268,10 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
       ),
     );
   }
+}
+
+// Custom selection controls to avoid "select all" bug if caused by platform defaults
+class EmptyTextSelectionControls extends MaterialTextSelectionControls {
+  @override
+  bool canSelectAll(TextSelectionDelegate delegate) => true;
 }

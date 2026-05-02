@@ -126,71 +126,66 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.task == null ? 'Add Task' : 'Edit Task'),
-          actions: widget.task != null
-              ? [
-                  IconButton(
-                    icon: Icon(Icons.delete, size: Responsive.iconSize24),
-                    onPressed: _deleteTask,
-                  ),
-                ]
-              : null,
-        ),
-        body: SingleChildScrollView(
-          padding: EdgeInsets.all(Responsive.spacing16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Task Title',
-                  hintText: 'Enter task title',
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.task == null ? 'Add Task' : 'Edit Task'),
+        actions: widget.task != null
+            ? [
+                IconButton(
+                  icon: Icon(Icons.delete, size: Responsive.iconSize24),
+                  onPressed: _deleteTask,
                 ),
-                style: TextStyle(fontSize: Responsive.fontSize16),
-                maxLines: 10,
-                minLines: 1,
+              ]
+            : null,
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(Responsive.spacing16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            TextField(
+              controller: titleController,
+              decoration: const InputDecoration(
+                labelText: 'Task Title',
+                hintText: 'Enter task title',
               ),
-              SizedBox(height: Responsive.spacing24),
-              Card(
-                child: ListTile(
-                  leading: Icon(
-                    Icons.notifications,
-                    color: AppTheme.accentColor,
-                    size: Responsive.iconSize24,
-                  ),
-                  title: Text(
-                    'Reminder',
-                    style: TextStyle(fontSize: Responsive.fontSize16),
-                  ),
-                  subtitle: Text(
-                    reminderTime != null
-                        ? DateFormat(
-                            'MMM dd, yyyy hh:mm a',
-                          ).format(reminderTime!)
-                        : 'No reminder set',
-                    style: TextStyle(
-                      fontSize: Responsive.fontSize14,
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                  trailing: reminderTime != null
-                      ? IconButton(
-                          icon: Icon(Icons.clear, size: Responsive.iconSize20),
-                          onPressed: () => setState(() => reminderTime = null),
-                        )
-                      : null,
-                  onTap: _selectReminderTime,
+              style: TextStyle(fontSize: Responsive.fontSize16),
+              maxLines: 10,
+              minLines: 1,
+            ),
+            SizedBox(height: Responsive.spacing24),
+            Card(
+              child: ListTile(
+                leading: Icon(
+                  Icons.notifications,
+                  color: AppTheme.accentColor,
+                  size: Responsive.iconSize24,
                 ),
+                title: Text(
+                  'Reminder',
+                  style: TextStyle(fontSize: Responsive.fontSize16),
+                ),
+                subtitle: Text(
+                  reminderTime != null
+                      ? DateFormat('MMM dd, yyyy hh:mm a').format(reminderTime!)
+                      : 'No reminder set',
+                  style: TextStyle(
+                    fontSize: Responsive.fontSize14,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+                trailing: reminderTime != null
+                    ? IconButton(
+                        icon: Icon(Icons.clear, size: Responsive.iconSize20),
+                        onPressed: () => setState(() => reminderTime = null),
+                      )
+                    : null,
+                onTap: _selectReminderTime,
               ),
-              SizedBox(height: Responsive.spacing32),
-              PrimaryButton(text: 'Save', onTap: _saveTask),
-            ],
-          ),
+            ),
+            SizedBox(height: Responsive.spacing32),
+            PrimaryButton(text: 'Save', onTap: _saveTask),
+          ],
         ),
       ),
     );

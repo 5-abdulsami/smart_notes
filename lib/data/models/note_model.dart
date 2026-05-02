@@ -22,6 +22,18 @@ class NoteModel extends HiveObject {
   @HiveField(5)
   int order;
 
+  @HiveField(6)
+  bool isPinned;
+
+  @HiveField(7)
+  double fontSize;
+
+  @HiveField(8)
+  bool isBold;
+
+  @HiveField(9)
+  bool isUnderline;
+
   NoteModel({
     required this.id,
     required this.title,
@@ -29,6 +41,10 @@ class NoteModel extends HiveObject {
     required this.createdAt,
     required this.updatedAt,
     this.order = 0,
+    this.isPinned = false,
+    this.fontSize = 16.0,
+    this.isBold = false,
+    this.isUnderline = false,
   });
 
   Map<String, dynamic> toJson() {
@@ -39,6 +55,10 @@ class NoteModel extends HiveObject {
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
       'order': order,
+      'isPinned': isPinned,
+      'fontSize': fontSize,
+      'isBold': isBold,
+      'isUnderline': isUnderline,
     };
   }
 
@@ -50,6 +70,10 @@ class NoteModel extends HiveObject {
       createdAt: DateTime.parse(json['createdAt']),
       updatedAt: DateTime.parse(json['updatedAt']),
       order: json['order'] ?? 0,
+      isPinned: json['isPinned'] ?? false,
+      fontSize: (json['fontSize'] ?? 16.0).toDouble(),
+      isBold: json['isBold'] ?? false,
+      isUnderline: json['isUnderline'] ?? false,
     );
   }
 }

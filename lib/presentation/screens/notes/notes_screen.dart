@@ -7,25 +7,78 @@ import '../../../core/theme/app_theme.dart';
 import '../settings/settings_screen.dart';
 import 'add_edit_note_screen.dart';
 
-class NotesScreen extends StatelessWidget {
+class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final NoteController controller = Get.put(NoteController());
+  State<NotesScreen> createState() => _NotesScreenState();
+}
 
+class _NotesScreenState extends State<NotesScreen> {
+  final NoteController controller = Get.put(NoteController());
+  final TextEditingController searchController = TextEditingController();
+  bool isSearching = false;
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notes'),
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, size: Responsive.iconSize24),
-            onPressed: () => Scaffold.of(context).openDrawer(),
+        title: isSearching
+            ? TextField(
+                controller: searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Search notes...',
+                  border: InputBorder.none,
+                  fillColor: Colors.transparent,
+                ),
+                style: const TextStyle(color: AppTheme.textPrimary),
+                onChanged: controller.updateSearchQuery,
+              )
+            : const Text('Notes'),
+        leading: isSearching
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  setState(() {
+                    isSearching = false;
+                    searchController.clear();
+                    controller.updateSearchQuery('');
+                  });
+                },
+              )
+            : Builder(
+                builder: (context) => IconButton(
+                  icon: Icon(Icons.menu, size: Responsive.iconSize24),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                ),
+              ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isSearching ? Icons.close : Icons.search,
+              size: Responsive.iconSize24,
+            ),
+            onPressed: () {
+              setState(() {
+                if (isSearching) {
+                  searchController.clear();
+                  controller.updateSearchQuery('');
+                }
+                isSearching = !isSearching;
+              });
+            },
           ),
-        ),
+        ],
       ),
       body: Obx(() {
-        final notes = controller.notes;
+        final notes = controller.filteredNotes;
 
         if (notes.isEmpty) {
           return Center(

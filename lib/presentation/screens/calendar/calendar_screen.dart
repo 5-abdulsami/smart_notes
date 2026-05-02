@@ -9,13 +9,18 @@ import '../settings/settings_screen.dart';
 import 'add_edit_event_screen.dart';
 import '../../widgets/event_card.dart';
 
-class CalendarScreen extends StatelessWidget {
+class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final CalendarController controller = Get.put(CalendarController());
+  State<CalendarScreen> createState() => _CalendarScreenState();
+}
 
+class _CalendarScreenState extends State<CalendarScreen> {
+  final CalendarController controller = Get.put(CalendarController());
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Calendar'),
@@ -35,25 +40,24 @@ class CalendarScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Obx(
-            () => Card(
+      body: Obx(() {
+        final selectedDay = controller.selectedDay.value;
+        final focusedDay = controller.focusedDay.value;
+
+        return Column(
+          children: [
+            Card(
               margin: EdgeInsets.all(Responsive.spacing16),
               child: TableCalendar(
                 firstDay: DateTime(2000),
                 lastDay: DateTime(2100),
-                focusedDay: controller.focusedDay.value,
-                selectedDayPredicate: (day) =>
-                    isSameDay(controller.selectedDay.value, day),
+                focusedDay: focusedDay,
+                selectedDayPredicate: (day) => isSameDay(selectedDay, day),
                 onDaySelected: (selected, focused) {
                   controller.onDaySelected(selected, focused);
-                  if (controller.getEventsForDay(selected).isEmpty) {
-                    Get.to(() => AddEditEventScreen(date: selected));
-                  }
                 },
-                onPageChanged: (focusedDay) {
-                  controller.focusedDay.value = focusedDay;
+                onPageChanged: (day) {
+                  controller.focusedDay.value = day;
                 },
                 calendarFormat: CalendarFormat.month,
                 headerStyle: HeaderStyle(
@@ -116,76 +120,69 @@ class CalendarScreen extends StatelessWidget {
                 eventLoader: (day) => controller.getEventsForDay(day),
               ),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: Responsive.spacing16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Obx(
-                  () => Text(
-                    DateFormat(
-                      'EEEE, MMMM dd, yyyy',
-                    ).format(controller.selectedDay.value),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: Responsive.spacing16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    DateFormat('EEEE, MMMM dd, yyyy').format(selectedDay),
                     style: TextStyle(
                       fontSize: Responsive.fontSize16,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textPrimary,
                     ),
                   ),
-                ),
-                TextButton.icon(
-                  onPressed: () => Get.to(
-                    () =>
-                        AddEditEventScreen(date: controller.selectedDay.value),
+                  TextButton.icon(
+                    onPressed: () => Get.to(
+                      () => AddEditEventScreen(date: selectedDay),
+                    ),
+                    icon: Icon(Icons.add, size: Responsive.iconSize20),
+                    label: const Text('Add Event'),
                   ),
-                  icon: Icon(Icons.add, size: Responsive.iconSize20),
-                  label: const Text('Add Event'),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Divider(color: AppTheme.dividerColor, height: 1),
-          Expanded(
-            child: Obx(() {
-              final events = controller.getEventsForDay(
-                controller.selectedDay.value,
-              );
+            Divider(color: AppTheme.dividerColor, height: 1),
+            Expanded(
+              child: Builder(builder: (context) {
+                final events = controller.getEventsForDay(selectedDay);
 
-              if (events.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.event_available,
-                        size: Responsive.getWidth(15),
-                        color: AppTheme.textSecondary,
-                      ),
-                      SizedBox(height: Responsive.spacing16),
-                      Text(
-                        'No events for this day',
-                        style: TextStyle(
-                          fontSize: Responsive.fontSize16,
+                if (events.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.event_available,
+                          size: Responsive.getWidth(15),
                           color: AppTheme.textSecondary,
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              }
+                        SizedBox(height: Responsive.spacing16),
+                        Text(
+                          'No events for this day',
+                          style: TextStyle(
+                            fontSize: Responsive.fontSize16,
+                            color: AppTheme.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
 
-              return ListView.builder(
-                padding: EdgeInsets.all(Responsive.spacing16),
-                itemCount: events.length,
-                itemBuilder: (context, index) {
-                  return EventCard(event: events[index]);
-                },
-              );
-            }),
-          ),
-        ],
-      ),
+                return ListView.builder(
+                  padding: EdgeInsets.all(Responsive.spacing16),
+                  itemCount: events.length,
+                  itemBuilder: (context, index) {
+                    return EventCard(event: events[index]);
+                  },
+                );
+              }),
+            ),
+          ],
+        );
+      }),
       drawer: Drawer(
         backgroundColor: AppTheme.secondaryColor,
         child: SafeArea(

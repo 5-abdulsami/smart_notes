@@ -9,6 +9,7 @@ class TaskController extends GetxController {
 
   final RxList<TaskModel> tasks = <TaskModel>[].obs;
   final RxBool showCompleted = true.obs;
+  final RxString searchQuery = ''.obs;
 
   @override
   void onInit() {
@@ -18,15 +19,32 @@ class TaskController extends GetxController {
 
   void loadTasks() {
     final allTasks = _storage.tasks.values.toList();
-    allTasks.sort((a, b) => a.order.compareTo(b.order));
+    // Sort: Pinned first, then by order
+    allTasks.sort((a, b) {
+      if (a.isPinned != b.isPinned) {
+        return b.isPinned ? 1 : -1;
+      }
+      return a.order.compareTo(b.order);
+    });
     tasks.value = allTasks;
   }
 
   List<TaskModel> get filteredTasks {
-    if (showCompleted.value) {
-      return tasks;
+    List<TaskModel> result = tasks;
+
+    // Filter by completion
+    if (!showCompleted.value) {
+      result = result.where((task) => !task.isCompleted).toList();
     }
-    return tasks.where((task) => !task.isCompleted).toList();
+
+    // Filter by search query
+    if (searchQuery.isNotEmpty) {
+      result = result.where((task) {
+        return task.title.toLowerCase().contains(searchQuery.value.toLowerCase());
+      }).toList();
+    }
+
+    return result;
   }
 
   Future<void> addTask(String title, DateTime? reminderTime) async {
@@ -35,12 +53,18 @@ class TaskController extends GetxController {
       title: title,
       createdAt: DateTime.now(),
       reminderTime: reminderTime,
-      order: tasks.length,
+      order: 0, // Set to 0 to be at top
     );
 
     // Schedule notification if reminder time is set
     if (reminderTime != null) {
       task.notificationId = await _notifications.scheduleTaskReminder(task);
+    }
+
+    // Shift all existing tasks' orders
+    for (var t in tasks) {
+      t.order++;
+      await _storage.updateTask(t);
     }
 
     await _storage.addTask(task);
@@ -60,6 +84,12 @@ class TaskController extends GetxController {
       task.notificationId = null;
     }
 
+    await _storage.updateTask(task);
+    loadTasks();
+  }
+
+  Future<void> togglePin(TaskModel task) async {
+    task.isPinned = !task.isPinned;
     await _storage.updateTask(task);
     loadTasks();
   }
@@ -95,6 +125,10 @@ class TaskController extends GetxController {
 
   void toggleCompletedFilter() {
     showCompleted.value = !showCompleted.value;
+  }
+
+  void updateSearchQuery(String query) {
+    searchQuery.value = query;
   }
 
   Future<void> reorderTasks(int oldIndex, int newIndex) async {

@@ -76,10 +76,13 @@ class TaskCard extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                Icons.drag_handle,
-                color: AppTheme.textSecondary,
-                size: Responsive.iconSize24,
+              IconButton(
+                icon: Icon(
+                  task.isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+                  color: task.isPinned ? AppTheme.accentColor : AppTheme.textSecondary,
+                  size: Responsive.iconSize20,
+                ),
+                onPressed: () => controller.togglePin(task),
               ),
             ],
           ),

@@ -48,6 +48,15 @@ class MyApp extends StatelessWidget {
       home: const HomeScreen(),
       defaultTransition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 300),
+      builder: (context, child) {
+        return GestureDetector(
+          onTap: () {
+            // This clears focus when tapping anywhere outside a text field
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: child,
+        );
+      },
     );
   }
 }
