@@ -27,13 +27,14 @@ class NoteModelAdapter extends TypeAdapter<NoteModel> {
       fontSize: fields[7] as double,
       isBold: fields[8] as bool,
       isUnderline: fields[9] as bool,
+      categoryId: fields[10] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, NoteModel obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,7 +54,9 @@ class NoteModelAdapter extends TypeAdapter<NoteModel> {
       ..writeByte(8)
       ..write(obj.isBold)
       ..writeByte(9)
-      ..write(obj.isUnderline);
+      ..write(obj.isUnderline)
+      ..writeByte(10)
+      ..write(obj.categoryId);
   }
 
   @override

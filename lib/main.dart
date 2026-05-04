@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'data/models/task_model.dart';
 import 'data/models/note_model.dart';
 import 'data/models/calendar_event_model.dart';
+import 'data/models/category_model.dart';
 import 'data/services/storage_service.dart';
 import 'data/services/notification_service.dart';
 import 'core/theme/app_theme.dart';
@@ -19,6 +20,7 @@ void main() async {
   Hive.registerAdapter(TaskModelAdapter());
   Hive.registerAdapter(NoteModelAdapter());
   Hive.registerAdapter(CalendarEventModelAdapter());
+  Hive.registerAdapter(CategoryModelAdapter());
 
   // Initialize Storage Service
   final storageService = StorageService();

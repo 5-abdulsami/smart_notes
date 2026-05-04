@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import '../../controllers/note_controller.dart';
+import '../../controllers/category_controller.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../data/models/note_model.dart';
@@ -17,11 +18,13 @@ class AddEditNoteScreen extends StatefulWidget {
 
 class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
   final NoteController controller = Get.find<NoteController>();
+  final CategoryController categoryController = Get.find<CategoryController>();
   late TextEditingController titleController;
   late TextEditingController descriptionController;
   bool isBold = false;
   bool isUnderline = false;
   double fontSize = 16;
+  String? selectedCategoryId;
 
   @override
   void initState() {
@@ -30,11 +33,17 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
     descriptionController = TextEditingController(
       text: widget.note?.description ?? '',
     );
-    // Load formatting from note
+    // Load formatting and category from note
     if (widget.note != null) {
       isBold = widget.note!.isBold;
       isUnderline = widget.note!.isUnderline;
       fontSize = widget.note!.fontSize;
+      selectedCategoryId = widget.note!.categoryId;
+    } else {
+      // Set to current category if creating new from a filtered view
+      if (controller.selectedCategoryId.value != 'all') {
+        selectedCategoryId = controller.selectedCategoryId.value;
+      }
     }
   }
 
@@ -58,6 +67,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
         fontSize: fontSize,
         isBold: isBold,
         isUnderline: isUnderline,
+        categoryId: selectedCategoryId,
       );
     } else {
       widget.note!.title = titleController.text.trim();
@@ -65,6 +75,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
       widget.note!.fontSize = fontSize;
       widget.note!.isBold = isBold;
       widget.note!.isUnderline = isUnderline;
+      widget.note!.categoryId = selectedCategoryId;
       controller.updateNote(widget.note!);
     }
   }
@@ -138,9 +149,48 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                   fontSize: Responsive.fontSize18,
                   fontWeight: FontWeight.w600,
                 ),
-                maxLines: 1, // Fixed: Titles should be 1 line usually
+                maxLines: 1,
               ),
             ),
+            Obx(() {
+              final categories = categoryController.categories;
+              if (categories.isEmpty) return const SizedBox.shrink();
+
+              return Container(
+                height: Responsive.spacing40,
+                margin: EdgeInsets.only(bottom: Responsive.spacing8),
+                child: ListView(
+                  scrollDirection: Axis.horizontal,
+                  padding:
+                      EdgeInsets.symmetric(horizontal: Responsive.spacing16),
+                  children: [
+                    ChoiceChip(
+                      label: const Text('Uncategorized'),
+                      selected: selectedCategoryId == null,
+                      onSelected: (selected) {
+                        setState(() => selectedCategoryId = null);
+                      },
+                    ),
+                    SizedBox(width: Responsive.spacing8),
+                    ...categories.map((category) {
+                      return Padding(
+                        padding: EdgeInsets.only(right: Responsive.spacing8),
+                        child: ChoiceChip(
+                          label: Text(category.name),
+                          selected: selectedCategoryId == category.id,
+                          onSelected: (selected) {
+                            setState(() => selectedCategoryId =
+                                selected ? category.id : null);
+                          },
+                          selectedColor: AppTheme.accentColor.withOpacity(0.3),
+                          checkmarkColor: AppTheme.accentColor,
+                        ),
+                      );
+                    }).toList(),
+                  ],
+                ),
+              );
+            }),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
@@ -244,7 +294,7 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                     border: InputBorder.none,
                     hintText: 'Start writing...',
                     hintStyle: TextStyle(color: AppTheme.textSecondary),
-                    fillColor: Colors.transparent, // Ensure no double fill
+                    fillColor: Colors.transparent,
                   ),
                   style: TextStyle(
                     fontSize: fontSize,
@@ -257,9 +307,8 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
                   keyboardType: TextInputType.multiline,
-                  // Ensure professional behavior: no auto-selection unless specified
                   enableInteractiveSelection: true,
-                  selectionControls: EmptyTextSelectionControls(), // Try to disable custom selection overlay if causing issues, or use Material
+                  selectionControls: EmptyTextSelectionControls(),
                 ),
               ),
             ),
@@ -270,7 +319,6 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
   }
 }
 
-// Custom selection controls to avoid "select all" bug if caused by platform defaults
 class EmptyTextSelectionControls extends MaterialTextSelectionControls {
   @override
   bool canSelectAll(TextSelectionDelegate delegate) => true;

@@ -20,6 +20,7 @@ class Responsive {
   static double get spacing20 => getWidth(5);
   static double get spacing24 => getWidth(6);
   static double get spacing32 => getWidth(8);
+  static double get spacing40 => getWidth(10);
 
   // Font sizes
   static double get fontSize12 => getWidth(3);

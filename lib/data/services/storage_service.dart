@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:hive/hive.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:get/get.dart';
+import '../models/category_model.dart';
 import '../models/task_model.dart';
 import '../models/note_model.dart';
 import '../models/calendar_event_model.dart';
@@ -11,32 +12,39 @@ class StorageService extends GetxService {
   static const String tasksBox = 'tasks';
   static const String notesBox = 'notes';
   static const String eventsBox = 'events';
+  static const String categoriesBox = 'categories';
 
   Box<TaskModel>? _tasksBox;
   Box<NoteModel>? _notesBox;
   Box<CalendarEventModel>? _eventsBox;
+  Box<CategoryModel>? _categoriesBox;
 
   Box<TaskModel> get tasks => _tasksBox!;
   Box<NoteModel> get notes => _notesBox!;
   Box<CalendarEventModel> get events => _eventsBox!;
+  Box<CategoryModel> get categories => _categoriesBox!;
 
   Future<void> init() async {
     _tasksBox = await Hive.openBox<TaskModel>(tasksBox);
     _notesBox = await Hive.openBox<NoteModel>(notesBox);
     _eventsBox = await Hive.openBox<CalendarEventModel>(eventsBox);
+    _categoriesBox = await Hive.openBox<CategoryModel>(categoriesBox);
   }
 
   // Backup all data to JSON with Custom Location
   Future<String?> backupData() async {
     try {
       final Map<String, dynamic> backup = {
-        'version': '1.0',
+        'version': '1.1',
         'timestamp': DateTime.now().toIso8601String(),
         'tasks': tasks.values.map((task) => task.toJson()).toList(),
         'notes': notes.values.map((note) => note.toJson()).toList(),
         'events': events.values.map((event) => event.toJson()).toList(),
+        'categories': categories.values
+            .map((category) => category.toJson())
+            .toList(),
       };
-
+      // ... (rest of backupData remains similar)
       final jsonString = const JsonEncoder.withIndent('  ').convert(backup);
       final fileName =
           'notes_app_backup_${DateTime.now().millisecondsSinceEpoch}.json';
@@ -52,8 +60,6 @@ class StorageService extends GetxService {
 
       if (outputFile == null) return null; // User canceled
 
-      // For some platforms, saveFile handles writing if bytes are provided,
-      // but for reliability across all, we write manually if needed:
       final file = File(outputFile);
       await file.writeAsString(jsonString);
 
@@ -93,6 +99,7 @@ class StorageService extends GetxService {
       await tasks.clear();
       await notes.clear();
       await events.clear();
+      await categories.clear();
 
       // Restore tasks
       if (backup['tasks'] != null) {
@@ -118,6 +125,14 @@ class StorageService extends GetxService {
         }
       }
 
+      // Restore categories
+      if (backup['categories'] != null) {
+        for (var categoryJson in backup['categories']) {
+          final category = CategoryModel.fromJson(categoryJson);
+          await categories.put(category.id, category);
+        }
+      }
+
       Get.snackbar(
         'Success',
         'Data restored successfully!',
@@ -134,6 +149,13 @@ class StorageService extends GetxService {
       return false;
     }
   }
+
+  // Category operations
+  Future<void> addCategory(CategoryModel category) async =>
+      await categories.put(category.id, category);
+  Future<void> updateCategory(CategoryModel category) async =>
+      await categories.put(category.id, category);
+  Future<void> deleteCategory(String id) async => await categories.delete(id);
 
   // Task operations
   Future<void> addTask(TaskModel task) async => await tasks.put(task.id, task);

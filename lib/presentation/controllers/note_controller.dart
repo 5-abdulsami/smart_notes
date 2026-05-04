@@ -7,6 +7,7 @@ class NoteController extends GetxController {
 
   final RxList<NoteModel> notes = <NoteModel>[].obs;
   final RxString searchQuery = ''.obs;
+  final RxString selectedCategoryId = 'all'.obs;
 
   @override
   void onInit() {
@@ -27,13 +28,28 @@ class NoteController extends GetxController {
   }
 
   List<NoteModel> get filteredNotes {
-    if (searchQuery.isEmpty) {
-      return notes;
+    var filtered = notes.toList();
+
+    // Category Filter
+    if (selectedCategoryId.value != 'all') {
+      filtered = filtered
+          .where((note) => note.categoryId == selectedCategoryId.value)
+          .toList();
     }
-    return notes.where((note) {
-      return note.title.toLowerCase().contains(searchQuery.value.toLowerCase()) ||
-          note.description.toLowerCase().contains(searchQuery.value.toLowerCase());
-    }).toList();
+
+    // Search Filter
+    if (searchQuery.isNotEmpty) {
+      filtered = filtered.where((note) {
+        return note.title
+                .toLowerCase()
+                .contains(searchQuery.value.toLowerCase()) ||
+            note.description
+                .toLowerCase()
+                .contains(searchQuery.value.toLowerCase());
+      }).toList();
+    }
+
+    return filtered;
   }
 
   Future<void> addNote(
@@ -42,6 +58,7 @@ class NoteController extends GetxController {
     double fontSize = 16.0,
     bool isBold = false,
     bool isUnderline = false,
+    String? categoryId,
   }) async {
     final note = NoteModel(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -53,6 +70,7 @@ class NoteController extends GetxController {
       fontSize: fontSize,
       isBold: isBold,
       isUnderline: isUnderline,
+      categoryId: categoryId,
     );
 
     // Shift all existing notes' orders
@@ -73,6 +91,10 @@ class NoteController extends GetxController {
     loadNotes();
     Get.back();
     Get.snackbar('Success', 'Note updated successfully');
+  }
+
+  void setCategory(String categoryId) {
+    selectedCategoryId.value = categoryId;
   }
 
   Future<void> togglePin(NoteModel note) async {

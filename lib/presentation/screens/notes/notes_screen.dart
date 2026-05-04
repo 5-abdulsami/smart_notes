@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/note_controller.dart';
+import '../../controllers/category_controller.dart';
 import '../../widgets/note_card.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/theme/app_theme.dart';
@@ -16,6 +17,7 @@ class NotesScreen extends StatefulWidget {
 
 class _NotesScreenState extends State<NotesScreen> {
   final NoteController controller = Get.put(NoteController());
+  final CategoryController categoryController = Get.put(CategoryController());
   final TextEditingController searchController = TextEditingController();
   bool isSearching = false;
 
@@ -23,6 +25,34 @@ class _NotesScreenState extends State<NotesScreen> {
   void dispose() {
     searchController.dispose();
     super.dispose();
+  }
+
+  void _showAddCategoryDialog() {
+    final nameController = TextEditingController();
+    Get.dialog(
+      AlertDialog(
+        backgroundColor: AppTheme.secondaryColor,
+        title: const Text('Add Category'),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Category name'),
+          style: const TextStyle(color: AppTheme.textPrimary),
+        ),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              if (nameController.text.trim().isNotEmpty) {
+                categoryController.addCategory(nameController.text.trim());
+                Get.back();
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -41,7 +71,14 @@ class _NotesScreenState extends State<NotesScreen> {
                 style: const TextStyle(color: AppTheme.textPrimary),
                 onChanged: controller.updateSearchQuery,
               )
-            : const Text('Notes'),
+            : Obx(() {
+                final categoryId = controller.selectedCategoryId.value;
+                if (categoryId == 'all') return const Text('Notes');
+                final category = categoryController.categories.firstWhereOrNull(
+                  (c) => c.id == categoryId,
+                );
+                return Text(category?.name ?? 'Notes');
+              }),
         leading: isSearching
             ? IconButton(
                 icon: const Icon(Icons.arrow_back),
@@ -98,14 +135,6 @@ class _NotesScreenState extends State<NotesScreen> {
                     color: AppTheme.textSecondary,
                   ),
                 ),
-                SizedBox(height: Responsive.spacing8),
-                Text(
-                  'Tap + to create your first note',
-                  style: TextStyle(
-                    fontSize: Responsive.fontSize14,
-                    color: AppTheme.textSecondary,
-                  ),
-                ),
               ],
             ),
           );
@@ -138,34 +167,105 @@ class _NotesScreenState extends State<NotesScreen> {
               ),
               SizedBox(height: Responsive.spacing12),
               Text(
-                'Notes App',
+                'Notes Categories',
                 style: TextStyle(
-                  fontSize: Responsive.fontSize24,
+                  fontSize: Responsive.fontSize20,
                   fontWeight: FontWeight.bold,
                   color: AppTheme.textPrimary,
                 ),
               ),
-              SizedBox(height: Responsive.spacing32),
-              Divider(color: AppTheme.dividerColor),
+              SizedBox(height: Responsive.spacing24),
+              const Divider(color: AppTheme.dividerColor),
+              Expanded(
+                child: Obx(() {
+                  final categories = categoryController.categories;
+                  final selectedId = controller.selectedCategoryId.value;
+
+                  return ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          Icons.notes,
+                          color: selectedId == 'all'
+                              ? AppTheme.accentColor
+                              : AppTheme.textSecondary,
+                        ),
+                        title: Text(
+                          'All Notes',
+                          style: TextStyle(
+                            color: selectedId == 'all'
+                                ? AppTheme.accentColor
+                                : AppTheme.textPrimary,
+                            fontWeight: selectedId == 'all'
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                        onTap: () {
+                          controller.setCategory('all');
+                          Get.back();
+                        },
+                      ),
+                      ...categories.map((category) {
+                        final isSelected = selectedId == category.id;
+                        return ListTile(
+                          leading: Icon(
+                            Icons.label,
+                            color: isSelected
+                                ? AppTheme.accentColor
+                                : Color(category.colorValue),
+                          ),
+                          title: Text(
+                            category.name,
+                            style: TextStyle(
+                              color: isSelected
+                                  ? AppTheme.accentColor
+                                  : AppTheme.textPrimary,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline, size: 20),
+                            onPressed: () =>
+                                categoryController.deleteCategory(category.id),
+                          ),
+                          onTap: () {
+                            controller.setCategory(category.id);
+                            Get.back();
+                          },
+                        );
+                      }).toList(),
+                      ListTile(
+                        leading: const Icon(
+                          Icons.add,
+                          color: AppTheme.textSecondary,
+                        ),
+                        title: const Text(
+                          'Add Category',
+                          style: TextStyle(color: AppTheme.textSecondary),
+                        ),
+                        onTap: _showAddCategoryDialog,
+                      ),
+                    ],
+                  );
+                }),
+              ),
+              const Divider(color: AppTheme.dividerColor),
               ListTile(
-                leading: Icon(
+                leading: const Icon(
                   Icons.settings,
                   color: AppTheme.accentColor,
-                  size: Responsive.iconSize24,
                 ),
-                title: Text(
-                  'Settings & Backup',
-                  style: TextStyle(
-                    fontSize: Responsive.fontSize16,
-                    color: AppTheme.textPrimary,
-                  ),
-                ),
+                title: const Text('Settings & Backup'),
                 onTap: () {
                   Get.back();
                   Get.to(() => const SettingsScreen());
                 },
               ),
-              Divider(color: AppTheme.dividerColor),
+              SizedBox(height: Responsive.spacing16),
             ],
           ),
         ),

@@ -34,6 +34,9 @@ class NoteModel extends HiveObject {
   @HiveField(9)
   bool isUnderline;
 
+  @HiveField(10)
+  String? categoryId;
+
   NoteModel({
     required this.id,
     required this.title,
@@ -45,6 +48,7 @@ class NoteModel extends HiveObject {
     this.fontSize = 16.0,
     this.isBold = false,
     this.isUnderline = false,
+    this.categoryId,
   });
 
   Map<String, dynamic> toJson() {
@@ -59,6 +63,7 @@ class NoteModel extends HiveObject {
       'fontSize': fontSize,
       'isBold': isBold,
       'isUnderline': isUnderline,
+      'categoryId': categoryId,
     };
   }
 
@@ -74,6 +79,7 @@ class NoteModel extends HiveObject {
       fontSize: (json['fontSize'] ?? 16.0).toDouble(),
       isBold: json['isBold'] ?? false,
       isUnderline: json['isUnderline'] ?? false,
+      categoryId: json['categoryId'],
     );
   }
 }
