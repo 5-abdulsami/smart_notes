@@ -101,7 +101,6 @@ Notes App follows the **MVVM (Model-View-ViewModel)** pattern combined with **Ge
    git clone https://github.com/5-abdulsami/notes_app.git
    cd notes_app
 
-```
 
 2. **Install dependencies:**
 ```bash
@@ -146,15 +145,8 @@ lib/
 
 ---
 
-## 📝 License
-
-This project is licensed under the MIT License.
-
 ## 👤 Author
 
-**Abdul Sami**
-
-* Organize your life, your way.
-* Enjoy using **Notes App**!
+**Abdul Sami** [5abdulsami2004@gmail.com]
 
 ---
