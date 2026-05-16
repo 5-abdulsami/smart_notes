@@ -147,6 +147,11 @@ lib/
 
 ## Author
 
-**Abdul Sami** [5abdulsami2004@gmail.com]
+**Abdul Sami**
+
+- GitHub: [@5-abdulsami](https://github.com/5-abdulsami)
+- Website: [abdulsami.live](https://abdulsami.live/)
+- Email: [5abdulsami2004@gmail.com](mailto:5abdulsami2004@gmail.com)
+- LinkedIn: [Abdul Sami](https://www.linkedin.com/in/5abdul-sami/)
 
 ---
