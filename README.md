@@ -4,7 +4,7 @@ A modern, elegant, and fully-featured productivity suite built with **Flutter**.
 
 ---
 
-## 📱 App Screenshots Preview
+## App Screenshots Preview
 
 <div align="center">
   <h3>Core Modules</h3>
@@ -32,39 +32,39 @@ A modern, elegant, and fully-featured productivity suite built with **Flutter**.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 📋 Task Management
+### Task Management
 * **Interactive To-Dos:** Add, edit, delete, and reorder tasks with ease.
 * **Smart Reminders:** Set specific reminders for high-priority items to stay on track.
 * **Visual Progress:** Mark tasks as complete with visual strikethrough.
 * **Fluid UI:** Enjoy interactive, swipeable cards for a fast and efficient workflow.
 
-### 📝 Rich Notes with Categories
+### Rich Notes with Categories
 * **Powerful Rich Text Editor:** Powered by **Flutter Quill** for in-app formatting including Bold, Underline, and dynamic Font Sizes.
 * **Checklists Support:** Integrated checkbox support for list-making and step-by-step tasks.
 * **Organization:** Organize notes into custom categories with dedicated color coding.
 * **Smart Focus:** Automatic keyboard dismiss management when tapping outside inputs.
 
-### 📅 Advanced Calendar
+### Advanced Calendar
 * **Monthly Overview:** Built with **Table Calendar** for a smooth and intuitive monthly view.
 * **Event Management:** Add events with specific Time, Location, and Reminder triggers.
 * **Timezone Optimized:** Full support for PKT (Pakistan Time) with a clean, dark-themed time picker.
 * **Gesture Navigation:** Swipe gestures to effortlessly navigate between months.
 
-### 💾 Data Security & Portability
+### Data Security & Portability
 * **Ultra-Fast Local Storage:** Powered by **Hive** NoSQL database for instant offline access and reliability.
 * **Custom Export/Backup:** Backup all your data to a JSON file and choose your preferred save location.
 * **Seamless Restore:** Easily select a JSON backup from your file manager to migrate or recover your data.
 
-### 🎨 Design & Experience
+### Design & Experience
 * **Professional Dark Theme:** Beautiful, spacious, and clutter-free interface designed for deep focus.
 * **Fully Responsive:** No hardcoded sizes! All UI elements scale dynamically using global media query variables.
 * **Ripple-Free Navigation:** Seamless transitions via a clean Bottom Navigation Bar.
 
 ---
 
-## 🛠️ Architecture & Tech Stack
+## Architecture & Tech Stack
 
 Notes App follows the **MVVM (Model-View-ViewModel)** pattern combined with **GetX** for dependency injection and state management, ensuring a highly scalable and maintainable codebase.
 
@@ -87,7 +87,7 @@ Notes App follows the **MVVM (Model-View-ViewModel)** pattern combined with **Ge
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 * Flutter SDK
@@ -126,7 +126,7 @@ flutter run
 
 ---
 
-## 🗂 Project Structure
+## Project Structure
 
 ```text
 lib/
@@ -145,7 +145,7 @@ lib/
 
 ---
 
-## 👤 Author
+## Author
 
 **Abdul Sami** [5abdulsami2004@gmail.com]
 
