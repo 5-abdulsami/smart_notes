@@ -7,6 +7,8 @@ import '../../core/theme/app_theme.dart';
 import '../controllers/note_controller.dart';
 import '../screens/notes/add_edit_note_screen.dart';
 
+import '../../core/utils/quill_helper.dart';
+
 class NoteCard extends StatelessWidget {
   final NoteModel note;
 
@@ -14,9 +16,10 @@ class NoteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final preview = note.description.length > 100
-        ? '${note.description.substring(0, 100)}...'
-        : note.description;
+    final plainText = QuillHelper.toPlainText(note.description);
+    final preview = plainText.length > 100
+        ? '${plainText.substring(0, 100)}...'
+        : plainText;
 
     return Card(
       margin: EdgeInsets.only(bottom: Responsive.spacing12),

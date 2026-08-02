@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import '../../controllers/note_controller.dart';
 import '../../controllers/category_controller.dart';
 import '../../../core/utils/responsive.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/quill_helper.dart';
 import '../../../data/models/note_model.dart';
 
 class AddEditNoteScreen extends StatefulWidget {
@@ -20,27 +22,25 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
   final NoteController controller = Get.find<NoteController>();
   final CategoryController categoryController = Get.find<CategoryController>();
   late TextEditingController titleController;
-  late TextEditingController descriptionController;
-  bool isBold = false;
-  bool isUnderline = false;
-  double fontSize = 16;
+  late QuillController quillController;
+  final FocusNode editorFocusNode = FocusNode();
+  final ScrollController editorScrollController = ScrollController();
   String? selectedCategoryId;
 
   @override
   void initState() {
     super.initState();
     titleController = TextEditingController(text: widget.note?.title ?? '');
-    descriptionController = TextEditingController(
-      text: widget.note?.description ?? '',
+
+    final doc = QuillHelper.parseDescription(widget.note?.description);
+    quillController = QuillController(
+      document: doc,
+      selection: const TextSelection.collapsed(offset: 0),
     );
-    // Load formatting and category from note
+
     if (widget.note != null) {
-      isBold = widget.note!.isBold;
-      isUnderline = widget.note!.isUnderline;
-      fontSize = widget.note!.fontSize;
       selectedCategoryId = widget.note!.categoryId;
     } else {
-      // Set to current category if creating new from a filtered view
       if (controller.selectedCategoryId.value != 'all') {
         selectedCategoryId = controller.selectedCategoryId.value;
       }
@@ -50,7 +50,9 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
   @override
   void dispose() {
     titleController.dispose();
-    descriptionController.dispose();
+    quillController.dispose();
+    editorFocusNode.dispose();
+    editorScrollController.dispose();
     super.dispose();
   }
 
@@ -60,29 +62,26 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
       return;
     }
 
+    final descriptionJson = QuillHelper.documentToJson(quillController.document);
+
     if (widget.note == null) {
       controller.addNote(
         titleController.text.trim(),
-        descriptionController.text.trim(),
-        fontSize: fontSize,
-        isBold: isBold,
-        isUnderline: isUnderline,
+        descriptionJson,
         categoryId: selectedCategoryId,
       );
     } else {
       widget.note!.title = titleController.text.trim();
-      widget.note!.description = descriptionController.text.trim();
-      widget.note!.fontSize = fontSize;
-      widget.note!.isBold = isBold;
-      widget.note!.isUnderline = isUnderline;
+      widget.note!.description = descriptionJson;
       widget.note!.categoryId = selectedCategoryId;
       controller.updateNote(widget.note!);
     }
   }
 
   void _copyDescription() {
-    if (descriptionController.text.isNotEmpty) {
-      Clipboard.setData(ClipboardData(text: descriptionController.text));
+    final plainText = quillController.document.toPlainText().trim();
+    if (plainText.isNotEmpty) {
+      Clipboard.setData(ClipboardData(text: plainText));
       Get.snackbar(
         'Copied',
         'Description copied to clipboard',
@@ -118,208 +117,159 @@ class _AddEditNoteScreenState extends State<AddEditNoteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => FocusScope.of(context).unfocus(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.note == null ? 'Add Note' : 'Edit Note'),
-          actions: [
-            if (widget.note != null)
-              IconButton(
-                icon: Icon(Icons.delete, size: Responsive.iconSize24),
-                onPressed: _deleteNote,
-              ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.note == null ? 'Add Note' : 'Edit Note'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.copy_rounded),
+            onPressed: _copyDescription,
+            tooltip: 'Copy text',
+          ),
+          if (widget.note != null)
             IconButton(
-              icon: Icon(Icons.check, size: Responsive.iconSize24),
-              onPressed: _saveNote,
+              icon: Icon(Icons.delete, size: Responsive.iconSize24),
+              onPressed: _deleteNote,
             ),
-          ],
-        ),
-        body: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.all(Responsive.spacing16),
-              child: TextField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Title',
-                  hintText: 'Enter note title',
-                ),
-                style: TextStyle(
-                  fontSize: Responsive.fontSize18,
-                  fontWeight: FontWeight.w600,
-                ),
-                maxLines: 1,
+          IconButton(
+            icon: Icon(Icons.check, size: Responsive.iconSize24),
+            onPressed: _saveNote,
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(Responsive.spacing16),
+            child: TextField(
+              controller: titleController,
+              decoration: const InputDecoration(
+                labelText: 'Title',
+                hintText: 'Enter note title',
               ),
+              style: TextStyle(
+                fontSize: Responsive.fontSize18,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
             ),
-            Obx(() {
-              final categories = categoryController.categories;
-              if (categories.isEmpty) return const SizedBox.shrink();
+          ),
+          Obx(() {
+            final categories = categoryController.categories;
+            if (categories.isEmpty) return const SizedBox.shrink();
 
-              return Container(
-                height: Responsive.spacing40,
-                margin: EdgeInsets.only(bottom: Responsive.spacing8),
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding:
-                      EdgeInsets.symmetric(horizontal: Responsive.spacing16),
-                  children: [
-                    ChoiceChip(
-                      label: const Text('Uncategorized'),
-                      selected: selectedCategoryId == null,
-                      onSelected: (selected) {
-                        setState(() => selectedCategoryId = null);
-                      },
-                    ),
-                    SizedBox(width: Responsive.spacing8),
-                    ...categories.map((category) {
-                      return Padding(
-                        padding: EdgeInsets.only(right: Responsive.spacing8),
-                        child: ChoiceChip(
-                          label: Text(category.name),
-                          selected: selectedCategoryId == category.id,
-                          onSelected: (selected) {
-                            setState(() => selectedCategoryId =
-                                selected ? category.id : null);
-                          },
-                          selectedColor: AppTheme.accentColor.withOpacity(0.3),
-                          checkmarkColor: AppTheme.accentColor,
-                        ),
-                      );
-                    }).toList(),
-                  ],
-                ),
-              );
-            }),
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: AppTheme.secondaryColor,
-              ),
-              padding: EdgeInsets.symmetric(
-                horizontal: Responsive.spacing8,
-                vertical: Responsive.spacing8,
-              ),
-              margin: EdgeInsets.symmetric(horizontal: Responsive.spacing16),
-              child: Row(
+            return Container(
+              height: Responsive.spacing40,
+              margin: EdgeInsets.only(bottom: Responsive.spacing8),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: EdgeInsets.symmetric(horizontal: Responsive.spacing16),
                 children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.format_bold,
-                      color: isBold
-                          ? AppTheme.accentColor
-                          : AppTheme.textSecondary,
-                    ),
-                    iconSize: Responsive.iconSize20,
-                    onPressed: () => setState(() => isBold = !isBold),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.format_underline,
-                      color: isUnderline
-                          ? AppTheme.accentColor
-                          : AppTheme.textSecondary,
-                    ),
-                    iconSize: Responsive.iconSize20,
-                    onPressed: () => setState(() => isUnderline = !isUnderline),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.format_list_bulleted),
-                    iconSize: Responsive.iconSize20,
-                    color: AppTheme.textSecondary,
-                    onPressed: () {
-                      final text = descriptionController.text;
-                      final selection = descriptionController.selection;
-                      final newText = '${text.substring(0, selection.start)}• ';
-                      descriptionController.value = TextEditingValue(
-                        text: newText + text.substring(selection.start),
-                        selection: TextSelection.collapsed(
-                          offset: newText.length,
-                        ),
-                      );
+                  ChoiceChip(
+                    label: const Text('Uncategorized'),
+                    selected: selectedCategoryId == null,
+                    onSelected: (selected) {
+                      setState(() => selectedCategoryId = null);
                     },
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.checklist),
-                    iconSize: Responsive.iconSize20,
-                    color: AppTheme.textSecondary,
-                    onPressed: () {
-                      final text = descriptionController.text;
-                      final selection = descriptionController.selection;
-                      final newText = '${text.substring(0, selection.start)}☐ ';
-                      descriptionController.value = TextEditingValue(
-                        text: newText + text.substring(selection.start),
-                        selection: TextSelection.collapsed(
-                          offset: newText.length,
-                        ),
-                      );
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.copy_rounded),
-                    iconSize: Responsive.iconSize20,
-                    color: AppTheme.textSecondary,
-                    onPressed: _copyDescription,
-                    tooltip: 'Copy all',
-                  ),
-                  const Spacer(),
-                  DropdownButton<double>(
-                    value: fontSize,
-                    dropdownColor: AppTheme.secondaryColor,
-                    items: [12.0, 14.0, 16.0, 18.0, 20.0, 24.0].map((size) {
-                      return DropdownMenuItem(
-                        value: size,
-                        child: Text(
-                          '${size.toInt()}',
-                          style: TextStyle(fontSize: Responsive.fontSize14),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() => fontSize = value);
-                      }
-                    },
-                  ),
+                  SizedBox(width: Responsive.spacing8),
+                  ...categories.map((category) {
+                    return Padding(
+                      padding: EdgeInsets.only(right: Responsive.spacing8),
+                      child: ChoiceChip(
+                        label: Text(category.name),
+                        selected: selectedCategoryId == category.id,
+                        onSelected: (selected) {
+                          setState(() => selectedCategoryId =
+                              selected ? category.id : null);
+                        },
+                        selectedColor: AppTheme.accentColor.withValues(alpha: 0.3),
+                        checkmarkColor: AppTheme.accentColor,
+                      ),
+                    );
+                  }),
                 ],
               ),
+            );
+          }),
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: AppTheme.secondaryColor,
             ),
-            Expanded(
-              child: Container(
-                color: AppTheme.primaryColor,
-                padding: EdgeInsets.all(Responsive.spacing16),
-                child: TextField(
-                  controller: descriptionController,
-                  decoration: const InputDecoration(
-                    border: InputBorder.none,
-                    hintText: 'Start writing...',
-                    hintStyle: TextStyle(color: AppTheme.textSecondary),
-                    fillColor: Colors.transparent,
-                  ),
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    color: AppTheme.textPrimary,
-                    fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-                    decoration: isUnderline ? TextDecoration.underline : null,
-                    height: 1.5,
-                  ),
-                  maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  keyboardType: TextInputType.multiline,
-                  enableInteractiveSelection: true,
-                  selectionControls: EmptyTextSelectionControls(),
+            margin: EdgeInsets.symmetric(horizontal: Responsive.spacing16),
+            padding: EdgeInsets.symmetric(
+              horizontal: Responsive.spacing4,
+              vertical: Responsive.spacing4,
+            ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: QuillSimpleToolbar(
+                controller: quillController,
+                config: const QuillSimpleToolbarConfig(
+                  showFontFamily: false,
+                  showFontSize: true,
+                  showBoldButton: true,
+                  showItalicButton: true,
+                  showUnderLineButton: true,
+                  showStrikeThrough: true,
+                  showInlineCode: false,
+                  showColorButton: true,
+                  showBackgroundColorButton: true,
+                  showClearFormat: true,
+                  showAlignmentButtons: true,
+                  showHeaderStyle: true,
+                  showListBullets: true,
+                  showListNumbers: true,
+                  showListCheck: true,
+                  showCodeBlock: false,
+                  showQuote: true,
+                  showIndent: true,
+                  showLink: true,
+                  showSubscript: false,
+                  showSuperscript: false,
+                  showSearchButton: false,
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          SizedBox(height: Responsive.spacing8),
+          Expanded(
+            child: Container(
+              color: AppTheme.primaryColor,
+              padding: EdgeInsets.symmetric(
+                horizontal: Responsive.spacing16,
+                vertical: Responsive.spacing8,
+              ),
+              child: QuillEditor(
+                controller: quillController,
+                scrollController: editorScrollController,
+                focusNode: editorFocusNode,
+                config: QuillEditorConfig(
+                  placeholder: 'Start writing...',
+                  scrollable: true,
+                  autoFocus: false,
+                  expands: true,
+                  padding: EdgeInsets.zero,
+                  customStyles: DefaultStyles(
+                    paragraph: DefaultTextBlockStyle(
+                      TextStyle(
+                        fontSize: Responsive.fontSize16,
+                        color: AppTheme.textPrimary,
+                        height: 1.5,
+                      ),
+                      const HorizontalSpacing(0, 0),
+                      const VerticalSpacing(0, 0),
+                      const VerticalSpacing(0, 0),
+                      null,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
-}
-
-class EmptyTextSelectionControls extends MaterialTextSelectionControls {
-  @override
-  bool canSelectAll(TextSelectionDelegate delegate) => true;
 }

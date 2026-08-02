@@ -5,6 +5,7 @@ import '../../../core/utils/responsive.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../controllers/task_controller.dart';
 import '../../controllers/note_controller.dart';
+import '../../controllers/category_controller.dart';
 import '../../controllers/calendar_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -137,6 +138,9 @@ class SettingsScreen extends StatelessWidget {
                                 }
                                 if (Get.isRegistered<NoteController>()) {
                                   Get.find<NoteController>().loadNotes();
+                                }
+                                if (Get.isRegistered<CategoryController>()) {
+                                  Get.find<CategoryController>().loadCategories();
                                 }
                                 if (Get.isRegistered<CalendarController>()) {
                                   Get.find<CalendarController>().loadEvents();

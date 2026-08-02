@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import '../../data/models/note_model.dart';
 import '../../data/services/storage_service.dart';
 
+import '../../core/utils/quill_helper.dart';
+
 class NoteController extends GetxController {
   final StorageService _storage = Get.find<StorageService>();
 
@@ -40,10 +42,11 @@ class NoteController extends GetxController {
     // Search Filter
     if (searchQuery.isNotEmpty) {
       filtered = filtered.where((note) {
+        final plainTextDescription = QuillHelper.toPlainText(note.description);
         return note.title
                 .toLowerCase()
                 .contains(searchQuery.value.toLowerCase()) ||
-            note.description
+            plainTextDescription
                 .toLowerCase()
                 .contains(searchQuery.value.toLowerCase());
       }).toList();

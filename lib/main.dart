@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:get/get.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'data/models/task_model.dart';
@@ -50,10 +52,18 @@ class MyApp extends StatelessWidget {
       home: const HomeScreen(),
       defaultTransition: Transition.cupertino,
       transitionDuration: const Duration(milliseconds: 300),
+      localizationsDelegates: const [
+        FlutterQuillLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', 'US'),
+      ],
       builder: (context, child) {
         return GestureDetector(
           onTap: () {
-            // This clears focus when tapping anywhere outside a text field
             FocusManager.instance.primaryFocus?.unfocus();
           },
           child: child,
